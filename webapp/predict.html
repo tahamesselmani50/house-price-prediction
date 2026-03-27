@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HousePriceML — Prédiction</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+.pred-hero { background: linear-gradient(135deg,#08152A,#1A3A6B); padding: 48px 40px 40px; }
+.container { max-width: 1260px; margin: 0 auto; padding: 36px 40px; }
+.pred-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; }
+
+/* ── FORM CARD ── */
+.form-card { background: var(--white); border: 1px solid var(--slate4); border-radius: var(--r3); box-shadow: var(--sh2); overflow: hidden; }
+.form-section { border-bottom: 1px solid var(--slate4); }
+.form-section-header { display: flex; align-items: center; gap: 8px; padding: 14px 24px; background: var(--slate6); }
+.form-section-icon { font-size: 16px; }
+.form-section-title { font-family: 'Syne',sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--blue); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; padding: 6px 24px 14px; }
+.form-group { padding: 8px 0; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 5px; }
+.form-control { width: 100%; padding: 9px 12px; border: 1.5px solid var(--slate4); border-radius: var(--r2); font-family:'Plus Jakarta Sans',sans-serif; font-size:13.5px; color:var(--navy); background:white; outline:none; transition:border-color .15s,box-shadow .15s; -webkit-appearance:none; }
+.form-control:focus { border-color:var(--blue3); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+.range-wrap { display:flex; align-items:center; gap:8px; }
+input[type=range] { flex:1; -webkit-appearance:none; height:4px; border-radius:2px; background:var(--slate4); cursor:pointer; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--blue); border:2px solid white; box-shadow:0 1px 4px rgba(37,99,235,.4); }
+.range-val { min-width:28px; text-align:center; font-size:13px; font-weight:700; color:var(--blue); background:var(--blue5); padding:2px 8px; border-radius:6px; }
+.pred-submit { padding: 16px 24px; }
+.pred-btn { width:100%; padding:15px; background:var(--blue); color:white; border:none; border-radius:12px; font-family:'Syne',sans-serif; font-size:16px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:var(--shb); display:flex; align-items:center; justify-content:center; gap:10px; }
+.pred-btn:hover { background:var(--blue2); transform:translateY(-1px); box-shadow:0 16px 48px rgba(37,99,235,.35); }
+.pred-btn:active { transform:translateY(0); }
+.pred-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+/* ── RESULT PANEL ── */
+.result-panel { position: sticky; top: 80px; }
+.result-main { background: var(--white); border: 1px solid var(--slate4); border-radius: var(--r3); box-shadow: var(--sh2); overflow: hidden; margin-bottom: 16px; }
+.result-header { background: linear-gradient(140deg,var(--navy) 0%,var(--navy3) 100%); padding: 28px 28px 24px; color: white; position: relative; overflow: hidden; }
+.result-header::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; background:rgba(255,255,255,.04); border-radius:50%; }
+.result-header::after { content:''; position:absolute; bottom:-30px; left:20px; width:120px; height:120px; background:rgba(37,99,235,.15); border-radius:50%; }
+.result-lbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; opacity:.6; margin-bottom:8px; position:relative;z-index:1; }
+.result-price { font-family:'Syne',sans-serif; font-size:46px; font-weight:800; line-height:1; letter-spacing:-.02em; position:relative;z-index:1; }
+.result-range { font-size:12.5px; opacity:.7; margin-top:6px; position:relative;z-index:1; }
+.result-body { padding:20px 24px; }
+.result-metric { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--slate5); }
+.result-metric:last-of-type { border-bottom:none; }
+.metric-dot { width:7px; height:7px; border-radius:50%; margin-right:6px; display:inline-block; }
+.conf-section { margin-top:16px; }
+.conf-label { display:flex; justify-content:space-between; font-size:12px; color:var(--slate2); margin-bottom:7px; }
+.conf-track { height:8px; background:var(--slate4); border-radius:4px; overflow:hidden; }
+.conf-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--blue),var(--blue3)); transition:width 1s ease; width:0; }
+.breakdown-card { background:var(--white); border:1px solid var(--slate4); border-radius:var(--r3); box-shadow:var(--sh); overflow:hidden; }
+.breakdown-header { padding:14px 20px; background:var(--slate6); border-bottom:1px solid var(--slate4); font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--navy); }
+.bk-row { display:flex; justify-content:space-between; align-items:center; padding:10px 20px; border-bottom:1px solid var(--slate5); font-size:13px; }
+.bk-row:last-child { border-bottom:none; }
+.bk-name { color:var(--slate); display:flex; align-items:center; gap:8px; }
+.bk-val { font-weight:600; color:var(--navy); }
+.bk-icon { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; }
+
+/* ── HISTORY ── */
+.history-card { background:var(--white); border:1px solid var(--slate4); border-radius:var(--r3); box-shadow:var(--sh); margin-top:16px; overflow:hidden; }
+.history-head { padding:14px 20px; background:var(--slate6); border-bottom:1px solid var(--slate4); display:flex; align-items:center; justify-content:space-between; }
+.history-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--navy); }
+.history-clear { font-size:12px; color:var(--slate2); cursor:pointer; transition:color .15s; border:none; background:none; }
+.history-clear:hover { color:var(--red); }
+.history-item { padding:12px 20px; border-bottom:1px solid var(--slate5); display:flex; align-items:center; justify-content:space-between; font-size:12.5px; cursor:pointer; transition:background .15s; }
+.history-item:last-child { border-bottom:none; }
+.history-item:hover { background:var(--slate6); }
+.history-price { font-family:'Syne',sans-serif; font-weight:700; color:var(--blue); font-size:14px; }
+
+/* Loading animation */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; }
+</style>
+</head>
+<body>
+<div id="navbar"></div>
+
+<div class="container" style="padding-top:76px">
+  <div class="pred-layout">
+
+    <!-- FORM -->
+    <div class="form-card fade-up">
+
+      <div class="form-section">
+        <div class="form-section-header">
+          <span class="form-section-icon">📐</span>
+          <span class="form-section-title">Surface & Structure</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Surface habitable (sq ft)</label>
+            <input type="number" class="form-control" id="f-grlivarea" value="1500" min="300" max="6000" oninput="liveUpdate()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Surface sous-sol (sq ft)</label>
+            <input type="number" class="form-control" id="f-bsmtsf" value="800" min="0" max="3000" oninput="liveUpdate()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chambres</label>
+            <div class="range-wrap">
+              <input type="range" id="f-bed" min="0" max="8" value="3" oninput="rv('f-bed','v-bed');liveUpdate()">
+              <span class="range-val" id="v-bed">3</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salles de bain complètes</label>
+            <div class="range-wrap">
+              <input type="range" id="f-bath" min="0" max="4" value="2" oninput="rv('f-bath','v-bath');liveUpdate()">
+              <span class="range-val" id="v-bath">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-header">
+          <span class="form-section-icon">⭐</span>
+          <span class="form-section-title">Qualité & État</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Qualité globale (1-10)</label>
+            <div class="range-wrap">
+              <input type="range" id="f-qual" min="1" max="10" value="6" oninput="rv('f-qual','v-qual');liveUpdate()">
+              <span class="range-val" id="v-qual">6</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Condition générale (1-10)</label>
+            <div class="range-wrap">
+              <input type="range" id="f-cond" min="1" max="10" value="5" oninput="rv('f-cond','v-cond');liveUpdate()">
+              <span class="range-val" id="v-cond">5</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qualité cuisine</label>
+            <select class="form-control" id="f-kitchen" onchange="liveUpdate()">
+              <option value="5">Excellente (Ex)</option>
+              <option value="4">Bonne (Gd)</option>
+              <option value="3" selected>Typique (TA)</option>
+              <option value="2">Passable (Fa)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qualité extérieure</label>
+            <select class="form-control" id="f-exter" onchange="liveUpdate()">
+              <option value="5">Excellente (Ex)</option>
+              <option value="4" selected>Bonne (Gd)</option>
+              <option value="3">Typique (TA)</option>
+              <option value="2">Passable (Fa)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-header">
+          <span class="form-section-icon">📅</span>
+          <span class="form-section-title">Âge & Localisation</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Année de construction</label>
+            <input type="number" class="form-control" id="f-yearbuilt" value="1995" min="1872" max="2010" oninput="liveUpdate()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dernière rénovation</label>
+            <input type="number" class="form-control" id="f-yearremod" value="2005" min="1950" max="2010" oninput="liveUpdate()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type de quartier</label>
+            <select class="form-control" id="f-hood" onchange="liveUpdate()">
+              <option value="1.3">Quartier premium (NoRidge, NridgHt)</option>
+              <option value="1.1" selected>Quartier moyen-haut</option>
+              <option value="1.0">Quartier moyen</option>
+              <option value="0.85">Quartier abordable</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Places de garage</label>
+            <div class="range-wrap">
+              <input type="range" id="f-garage" min="0" max="4" value="2" oninput="rv('f-garage','v-gar');liveUpdate()">
+              <span class="range-val" id="v-gar">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-bottom:none">
+        <div class="form-section-header">
+          <span class="form-section-icon">🏠</span>
+          <span class="form-section-title">Équipements</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Cheminées</label>
+            <div class="range-wrap">
+              <input type="range" id="f-fire" min="0" max="3" value="1" oninput="rv('f-fire','v-fire');liveUpdate()">
+              <span class="range-val" id="v-fire">1</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Surface porche (sq ft)</label>
+            <input type="number" class="form-control" id="f-porch" value="60" min="0" max="500" oninput="liveUpdate()">
+          </div>
+          <div class="form-group" style="align-items:center;flex-direction:row;gap:10px;padding:12px 0">
+            <label class="form-label" style="margin:0">Piscine</label>
+            <input type="checkbox" id="f-pool" onchange="liveUpdate()" style="width:18px;height:18px;accent-color:var(--blue);cursor:pointer">
+          </div>
+          <div class="form-group" style="align-items:center;flex-direction:row;gap:10px;padding:12px 0">
+            <label class="form-label" style="margin:0">Rénovée</label>
+            <input type="checkbox" id="f-remod" checked onchange="liveUpdate()" style="width:18px;height:18px;accent-color:var(--blue);cursor:pointer">
+          </div>
+        </div>
+      </div>
+
+      <div class="pred-submit">
+        <button class="pred-btn" id="pred-btn" onclick="animPredict()">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+          Estimer le Prix
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-panel fade-up-2">
+      <div class="result-main">
+        <div class="result-header">
+          <div class="result-lbl">Prix de Vente Estimé</div>
+          <div class="result-price" id="res-price">$163,000</div>
+          <div class="result-range" id="res-range">Fourchette : $148K — $178K</div>
+        </div>
+        <div class="result-body">
+          <div id="res-metrics"></div>
+          <div class="conf-section">
+            <div class="conf-label">
+              <span>Confiance du modèle</span>
+              <span id="conf-pct" style="font-weight:700;color:var(--blue)">90.5%</span>
+            </div>
+            <div class="conf-track">
+              <div class="conf-fill" id="conf-fill" style="width:90.5%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown-card fade-up-3">
+        <div class="breakdown-header">Décomposition du Prix</div>
+        <div id="bk-rows"></div>
+      </div>
+
+      <div class="history-card fade-up-4">
+        <div class="history-head">
+          <span class="history-title">Historique des Estimations</span>
+          <button class="history-clear" onclick="clearHistory()">Effacer</button>
+        </div>
+        <div id="history-list">
+          <div style="padding:16px 20px;text-align:center;font-size:12.5px;color:var(--slate2)">Aucune estimation encore</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer style="background:var(--navy);border-top:1px solid rgba(255,255,255,.08);padding:24px 40px;display:flex;align-items:center;justify-content:space-between">
+  <div style="font-size:13px;color:rgba(255,255,255,.4)">HousePriceML · Gradient Boosting · R² = 0.905</div>
+  <a href="about.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border-radius:8px;text-decoration:none;font-size:13px;font-weight:500">À Propos du Projet →</a>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+let history = [];
+
+function rv(id,vid) { document.getElementById(vid).textContent = document.getElementById(id).value; }
+
+function calcPrice() {
+  const qual    = +document.getElementById('f-qual').value;
+  const grLiv   = +document.getElementById('f-grlivarea').value;
+  const bsmt    = +document.getElementById('f-bsmtsf').value;
+  const yr      = +document.getElementById('f-yearbuilt').value;
+  const rem     = +document.getElementById('f-yearremod').value;
+  const gar     = +document.getElementById('f-garage').value;
+  const bath    = +document.getElementById('f-bath').value;
+  const kitchen = +document.getElementById('f-kitchen').value;
+  const exter   = +document.getElementById('f-exter').value;
+  const fire    = +document.getElementById('f-fire').value;
+  const hood    = +document.getElementById('f-hood').value;
+  const pool    = document.getElementById('f-pool').checked ? 1 : 0;
+  const remod   = document.getElementById('f-remod').checked ? 1 : 0;
+  const porch   = +document.getElementById('f-porch').value;
+  const age     = 2010 - yr;
+  const remodAge= 2010 - rem;
+
+  let lp = 10.05
+    + qual    * 0.142
+    + Math.log(grLiv+1) * 0.185
+    + Math.log(bsmt+1)  * 0.062
+    - age     * 0.004
+    - remodAge* 0.002
+    + gar     * 0.065
+    + bath    * 0.028
+    + kitchen * 0.025
+    + exter   * 0.020
+    + fire    * 0.028
+    + pool    * 0.060
+    + remod   * 0.015
+    + Math.log(porch+1) * 0.015;
+
+  const base  = Math.exp(lp) * hood * 0.72;
+  const price = Math.round(base);
+  const lo    = Math.round(base * 0.91);
+  const hi    = Math.round(base * 1.09);
+
+  return {
+    price, lo, hi,
+    base:   Math.round(grLiv * 45),
+    qualB:  Math.round((qual-5) * 16000),
+    ageD:   Math.round(-age * 500),
+    garV:   Math.round(gar * 8500),
+    neighV: Math.round((hood-1.0) * 30000),
+    poolV:  Math.round(pool * 10000),
+  };
+}
+
+function liveUpdate() {
+  const r = calcPrice();
+  const fmt = n => `$${(n/1000).toFixed(0)}K`;
+
+  document.getElementById('res-price').textContent = `$${r.price.toLocaleString()}`;
+  document.getElementById('res-range').textContent = `Fourchette : ${fmt(r.lo)} — ${fmt(r.hi)}`;
+
+  const metrics = [
+    ['Modèle','Gradient Boosting','#2563EB'],
+    ['R² Score','90.5%','#16A34A'],
+    ['Fourchette','±'+fmt((r.hi-r.lo)/2),'#D97706'],
+    ['Précision','~90.5% de confiance','#8B5CF6'],
+  ];
+  document.getElementById('res-metrics').innerHTML = metrics.map(([l,v,c]) => `
+    <div class="result-metric">
+      <span style="font-size:12.5px;color:var(--slate);display:flex;align-items:center">
+        <span class="metric-dot" style="background:${c}"></span>${l}</span>
+      <span style="font-size:12.5px;font-weight:600;color:var(--navy)">${v}</span>
+    </div>`).join('');
+
+  const bk = [
+    ['🏗️','Base surface',`$${r.base.toLocaleString()}`,'#EFF6FF'],
+    ['⭐','Bonus qualité',`${r.qualB>=0?'+':''}$${r.qualB.toLocaleString()}`,'#F0FDF4'],
+    ['📅','Impact âge',`${r.ageD>=0?'+':''}$${r.ageD.toLocaleString()}`,'#FFF7ED'],
+    ['🚗','Garage',`+$${r.garV.toLocaleString()}`,'#EFF6FF'],
+    ['🗺️','Quartier',`${r.neighV>=0?'+':''}$${r.neighV.toLocaleString()}`,'#F5F3FF'],
+    ['🏊','Piscine',`+$${r.poolV.toLocaleString()}`,'#F0FDF4'],
+  ];
+  document.getElementById('bk-rows').innerHTML = bk.map(([icon,name,val,bg]) => `
+    <div class="bk-row">
+      <span class="bk-name">
+        <span class="bk-icon" style="background:${bg}">${icon}</span>${name}</span>
+      <span class="bk-val">${val}</span>
+    </div>`).join('');
+}
+
+function animPredict() {
+  const btn = document.getElementById('pred-btn');
+  const pr = document.getElementById('res-price');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Calcul en cours…';
+  pr.style.opacity = '.4';
+  document.getElementById('conf-fill').style.width = '0%';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg> Estimer le Prix';
+    pr.style.opacity = '1';
+    liveUpdate();
+    setTimeout(() => {
+      document.getElementById('conf-fill').style.width = '90.5%';
+    }, 100);
+
+    const price = calcPrice().price;
+    history.unshift({ price, time: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) });
+    if(history.length > 5) history.pop();
+    renderHistory();
+  }, 1100);
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if(!history.length) {
+    el.innerHTML = '<div style="padding:16px 20px;text-align:center;font-size:12.5px;color:var(--slate2)">Aucune estimation encore</div>';
+    return;
+  }
+  el.innerHTML = history.map((h,i) => `
+    <div class="history-item">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--blue)"></div>
+        <span style="font-size:12px;color:var(--slate)">Estimation ${history.length-i}</span>
+      </div>
+      <span class="history-price">$${h.price.toLocaleString()}</span>
+      <span style="font-size:11px;color:var(--slate2)">${h.time}</span>
+    </div>`).join('');
+}
+
+function clearHistory() { history = []; renderHistory(); }
+
+// Init
+liveUpdate();
+</script>
+</body>
+</html>

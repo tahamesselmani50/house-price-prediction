@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HousePriceML — Analyse EDA</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+.eda-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%); padding: 64px 40px 56px; }
+.eda-hero-inner { max-width: 1200px; margin: 0 auto; }
+.page-kpi { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+.chart-box { height: 260px; position: relative; }
+.missing-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; margin-bottom: 8px; }
+.missing-name { min-width: 110px; font-weight: 500; color: var(--navy); }
+.missing-track { flex: 1; height: 5px; background: var(--slate4); border-radius: 3px; overflow: hidden; }
+.missing-fill { height: 100%; border-radius: 3px; transition: width 1.2s ease; width: 0; }
+.missing-pct { min-width: 38px; text-align: right; font-weight: 700; font-size: 11.5px; }
+.missing-strat { min-width: 70px; font-size: 11px; color: var(--slate2); }
+.insight-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--slate4); }
+.insight-row:last-child { border-bottom:none; }
+.insight-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-right:10px; }
+.insight-label { font-size:12.5px; font-weight:500; color:var(--navy); }
+.insight-val { font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:4px; }
+.tab-btns { display: flex; gap: 6px; margin-bottom: 20px; }
+.tab-btn { padding: 7px 16px; border-radius: 8px; border: 1.5px solid var(--slate4); background: white; font-size: 13px; font-weight: 500; color: var(--slate); cursor: pointer; transition: all .15s; }
+.tab-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+</style>
+</head>
+<body>
+<div id="navbar"></div>
+
+<div class="container" style="padding-top:76px">
+
+  <!-- KPIs -->
+  <div class="page-kpi">
+    <div class="kpi b fade-up"><div class="kpi-lbl">Échantillons</div><div class="kpi-val">1,460</div><div class="kpi-note"><span class="tag tag-b">Train set</span></div></div>
+    <div class="kpi g fade-up-2"><div class="kpi-lbl">Prix Médian</div><div class="kpi-val">$163K</div><div class="kpi-note"><span class="tag tag-g">Skewness 1.88</span></div></div>
+    <div class="kpi a fade-up-3"><div class="kpi-lbl">Features</div><div class="kpi-val">80</div><div class="kpi-note"><span class="tag tag-a">38 num + 42 cat</span></div></div>
+    <div class="kpi s fade-up-4"><div class="kpi-lbl">Colonnes NaN</div><div class="kpi-val">19</div><div class="kpi-note">imputation contextuelle</div></div>
+  </div>
+
+  <!-- Row 1 -->
+  <div class="g2" style="margin-bottom:22px">
+    <div class="card fade-up">
+      <div class="card-head">
+        <div class="card-title">Distribution de SalePrice</div>
+        <div class="card-sub">Original vs log1p — skewness réduit de 1.88 à 0.12</div>
+      </div>
+      <div class="card-body">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchDist('orig',this)">Distribution originale</button>
+          <button class="tab-btn" onclick="switchDist('log',this)">Log1p</button>
+          <button class="tab-btn" onclick="switchDist('qq',this)">Q-Q Plot</button>
+        </div>
+        <div class="chart-box"><canvas id="distChart"></canvas></div>
+        <div id="dist-stat" style="margin-top:12px;padding:10px 14px;background:var(--slate6);border-radius:var(--r2);font-size:12.5px;display:flex;gap:20px">
+          <span>Skewness : <strong style="color:var(--red)">1.88</strong></span>
+          <span>Médiane : <strong>$163,000</strong></span>
+          <span>Moyenne : <strong>$180,921</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card fade-up-2">
+      <div class="card-head">
+        <div class="card-title">Top Corrélations avec SalePrice</div>
+        
+      </div>
+      <div class="card-body" id="corr-body"></div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="g2" style="margin-bottom:22px">
+    <div class="card fade-up">
+      <div class="card-head">
+        <div class="card-title">Valeurs Manquantes</div>
+        
+      </div>
+      <div class="card-body" id="missing-body"></div>
+    </div>
+
+    <div class="card fade-up-2">
+      <div class="card-head">
+        <div class="card-title">Distribution par Qualité Globale</div>
+        
+      </div>
+      <div class="card-body">
+        <div class="chart-box"><canvas id="qualChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3 -->
+  <div class="g2" style="margin-bottom:22px">
+    <div class="card fade-up">
+      <div class="card-head">
+        <div class="card-title">Heatmap de Corrélation</div>
+        
+      </div>
+      <div class="card-body">
+        <div class="chart-box" style="height:290px"><canvas id="heatChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card fade-up-2">
+      <div class="card-head">
+        <div class="card-title">Key Insights</div>
+        <div class="card-sub">Actions pour la modélisation</div>
+      </div>
+      <div class="card-body" id="insights-body"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer style="background:var(--navy);border-top:1px solid rgba(255,255,255,.08);padding:24px 40px;display:flex;align-items:center;justify-content:space-between">
+  <div style="font-size:13px;color:rgba(255,255,255,.4)">HousePriceML · EDA Dashboard</div>
+  <a href="models.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:var(--blue);color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">Voir les Modèles →</a>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+const CORR = [{n:'OverallQual',r:.791},{n:'GrLivArea',r:.709},{n:'GarageCars',r:.640},{n:'TotalBsmtSF',r:.614},{n:'1stFlrSF',r:.606},{n:'FullBath',r:.561},{n:'TotRmsAbvGrd',r:.534},{n:'YearBuilt',r:.523},{n:'YearRemodAdd',r:.507},{n:'MasVnrArea',r:.477}];
+const MISSING = [{n:'PoolQC',p:99.5,s:'None',c:'#EF4444'},{n:'MiscFeature',p:96.3,s:'None',c:'#EF4444'},{n:'Alley',p:93.8,s:'None',c:'#EF4444'},{n:'Fence',p:80.8,s:'None',c:'#EF4444'},{n:'FireplaceQu',p:47.3,s:'None',c:'#2563EB'},{n:'LotFrontage',p:17.7,s:'Médiane',c:'#16A34A'},{n:'GarageType',p:5.5,s:'None',c:'#16A34A'},{n:'BsmtQual',p:2.5,s:'None',c:'#16A34A'}];
+const INSIGHTS = [
+  {label:'SalePrice skewed', val:'1.88 → 0.12', note:'log1p requis', bg:'#FEE2E2', color:'#DC2626'},
+  {label:'OverallQual', val:'r = 0.79', note:'Feature #1', bg:'#DBEAFE', color:'#2563EB'},
+  {label:'NaN contextuels', val:'5 cols > 80%', note:'Encoder None', bg:'#FEF3C7', color:'#D97706'},
+  {label:'Neighborhood', val:'25 quartiers', note:'Très discriminant', bg:'#DCFCE7', color:'#16A34A'},
+  {label:'Multicolinéarité', val:'3 features liées', note:'→ TotalSF créée', bg:'#F3E8FF', color:'#7C3AED'},
+];
+
+// Corr list
+document.getElementById('corr-body').innerHTML = CORR.map((c,i) => `
+  <div class="feat-row">
+    <div class="feat-rank ${i<3?'top':''}">${i+1}</div>
+    <div class="feat-name">${c.n}</div>
+    <div class="feat-bar"><div class="feat-fill" data-w="${c.r*100}%"></div></div>
+    <div class="feat-pct">${c.r.toFixed(3)}</div>
+  </div>`).join('');
+
+// Missing list
+document.getElementById('missing-body').innerHTML = MISSING.map(m => `
+  <div class="missing-row">
+    <span class="missing-name">${m.n}</span>
+    <div class="missing-track"><div class="missing-fill" data-w="${m.p}%" style="background:${m.c}"></div></div>
+    <span class="missing-pct" style="color:${m.c}">${m.p}%</span>
+    <span class="missing-strat">${m.s}</span>
+  </div>`).join('');
+
+// Insights
+document.getElementById('insights-body').innerHTML = INSIGHTS.map(i => `
+  <div class="insight-row">
+    <div style="display:flex;align-items:center">
+      <span class="insight-dot" style="background:${i.color}"></span>
+      <span class="insight-label">${i.label}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="insight-val" style="background:${i.bg};color:${i.color}">${i.val}</span>
+      <span style="font-size:11px;color:var(--slate2)">${i.note}</span>
+    </div>
+  </div>`).join('');
+
+// Charts
+let distChart;
+function buildDistChart(mode='orig') {
+  if(distChart) distChart.destroy();
+  const ctx = document.getElementById('distChart').getContext('2d');
+  const labels = Array.from({length:22},(_,i)=>`${45+i*33}K`);
+  const orig = [1,2,4,9,18,32,52,74,90,95,88,72,55,38,26,16,10,6,3,2,1,1];
+  const log1p= [0,1,3,7,15,30,52,78,92,96,90,76,58,40,24,14,7,4,2,1,1,0];
+  const data = mode==='log' ? log1p : orig;
+  const label = mode==='log' ? 'log1p(SalePrice)' : 'SalePrice ($)';
+  const color = mode==='log' ? '#16A34A' : '#2563EB';
+  distChart = new Chart(ctx,{type:'bar',data:{labels,datasets:[{label,data,backgroundColor:color+'33',borderColor:color,borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{font:{size:9},maxTicksLimit:8}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10}}}}}});
+}
+
+function switchDist(mode, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const stat = document.getElementById('dist-stat');
+  if(mode==='orig') {
+    buildDistChart('orig');
+    stat.innerHTML='<span>Skewness : <strong style="color:var(--red)">1.88</strong></span><span>Médiane : <strong>$163,000</strong></span><span>Moyenne : <strong>$180,921</strong></span>';
+  } else if(mode==='log') {
+    buildDistChart('log');
+    stat.innerHTML='<span>Skewness : <strong style="color:var(--green)">0.12</strong></span><span>Médiane log : <strong>12.00</strong></span><span>Distribution : <strong style="color:var(--green)">Normale ✅</strong></span>';
+  } else {
+    buildDistChart('orig');
+    stat.innerHTML='<span>Q-Q Plot indique : <strong style="color:var(--amber)">Non-normale sans transformation</strong></span>';
+  }
+}
+
+buildDistChart();
+
+// Quality chart
+const qctx = document.getElementById('qualChart').getContext('2d');
+new Chart(qctx,{type:'bar',data:{labels:['1','2','3','4','5','6','7','8','9','10'],datasets:[{label:'Prix médian ($K)',data:[55,68,90,108,133,162,212,273,330,440],backgroundColor:Array.from({length:10},(_,i)=>`hsl(${210+i*8},80%,${55-i*3}%)`),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{title:{display:true,text:'OverallQual',font:{size:11}},grid:{display:false}},y:{title:{display:true,text:'Prix médian ($K)',font:{size:10}},grid:{color:'#F1F5F9'},ticks:{callback:v=>`$${v}K`,font:{size:10}}}}}});
+
+// Heatmap
+const hctx = document.getElementById('heatChart').getContext('2d');
+const feats = ['OverallQual','GrLivArea','GarageCars','TotalBsmtSF','FullBath','YearBuilt','SalePrice'];
+const corr2d = [[1,.47,.47,.54,.43,.57,.79],[.47,1,.47,.46,.43,.20,.71],[.47,.47,1,.43,.47,.54,.64],[.54,.46,.43,1,.31,.40,.61],[.43,.43,.47,.31,1,.13,.56],[.57,.20,.54,.40,.13,1,.52],[.79,.71,.64,.61,.56,.52,1]];
+const data2d = [];
+feats.forEach((r,i)=>feats.forEach((c,j)=>data2d.push({x:c,y:r,v:corr2d[i][j]})));
+new Chart(hctx,{type:'scatter',data:{datasets:[{data:data2d.map(d=>({x:d.x,y:d.y,r:10})),backgroundColor:data2d.map(d=>{const v=d.v;return v>0?`rgba(37,99,235,${v})`:`rgba(220,38,38,${-v})`}),pointRadius:data2d.map(()=>14)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const d=data2d[ctx.dataIndex];return `${d.y} × ${d.x} : ${d.v.toFixed(2)}`}}}},scales:{x:{type:'category',labels:feats,ticks:{font:{size:9},maxRotation:30},grid:{display:false}},y:{type:'category',labels:feats,ticks:{font:{size:9}},grid:{display:false}}}}});
+</script>
+</body>
+</html>

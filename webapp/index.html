@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HousePriceML — Accueil</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── HERO ── */
+.hero {
+  min-height: 85vh;
+  background: var(--navy);
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 80px 0 0;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(37,99,235,.18) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 40% at 20% 70%, rgba(26,58,107,.5) 0%, transparent 60%);
+}
+.hero-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.hero-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 40px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  position: relative; z-index: 1;
+  width: 100%;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(37,99,235,.2); border: 1px solid rgba(37,99,235,.4);
+  color: var(--blue4); padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 46px; font-weight: 800;
+  line-height: 1.05; color: white;
+  margin-bottom: 20px;
+  letter-spacing: -.02em;
+}
+.hero-title span { color: var(--blue3); }
+.hero-desc {
+  font-size: 16px; line-height: 1.7;
+  color: rgba(255,255,255,.62);
+  margin-bottom: 36px; max-width: 480px;
+}
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: var(--blue); color: white;
+  border-radius: 12px; font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  box-shadow: var(--shb); transition: all .2s;
+}
+.hero-btn-primary:hover { background: var(--blue2); transform: translateY(-2px); box-shadow: 0 16px 48px rgba(37,99,235,.38); }
+.hero-btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.2); color: white;
+  border-radius: 12px; font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  transition: all .2s;
+}
+.hero-btn-outline:hover { background: rgba(255,255,255,.14); }
+
+.hero-stats {
+  display: flex; gap: 28px; margin-top: 40px; padding-top: 36px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.hstat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: white; line-height: 1; }
+.hstat-lbl { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 4px; }
+
+/* ── HERO CARD ── */
+.hero-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r3);
+  padding: 28px;
+  backdrop-filter: blur(10px);
+}
+.hero-card-title {
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,.5); text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 18px;
+}
+.model-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 10px; margin-bottom: 6px;
+  background: rgba(255,255,255,.04);
+  transition: background .15s;
+}
+.model-row:hover { background: rgba(255,255,255,.08); }
+.model-row.best { background: rgba(37,99,235,.2); border: 1px solid rgba(37,99,235,.3); }
+.model-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.model-name { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.85); flex: 1; }
+.model-bar-wrap { width: 80px; height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+.model-bar-fill { height: 100%; border-radius: 2px; transition: width 1.5s ease; width: 0; }
+.model-r2 { font-size: 12.5px; font-weight: 700; color: white; min-width: 38px; text-align: right; }
+
+/* ── FEATURES SECTION ── */
+.features { padding: 100px 0; background: var(--slate6); }
+.features-inner { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+.features-title {
+  font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 800;
+  color: var(--navy); text-align: center; margin-bottom: 12px;
+}
+.features-sub { font-size: 16px; color: var(--slate); text-align: center; margin-bottom: 56px; }
+.feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+.feat-card {
+  background: var(--white); border: 1px solid var(--slate4);
+  border-radius: var(--r3); padding: 32px 28px;
+  box-shadow: var(--sh); transition: box-shadow .25s, transform .25s;
+}
+.feat-card:hover { box-shadow: var(--sh3); transform: translateY(-4px); }
+.feat-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 18px;
+}
+.feat-card-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.feat-card-desc { font-size: 13.5px; color: var(--slate); line-height: 1.65; }
+.feat-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 16px; font-size: 13px; font-weight: 600;
+  color: var(--blue); text-decoration: none;
+  transition: gap .15s;
+}
+.feat-link:hover { gap: 8px; }
+
+/* ── PIPELINE ── */
+.pipeline { padding: 100px 0; background: var(--white); }
+.pipeline-inner { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+.pipe-steps { display: grid; grid-template-columns: repeat(6,1fr); gap: 0; position: relative; margin-top: 56px; }
+.pipe-steps::before {
+  content: ''; position: absolute; top: 30px; left: 8%; right: 8%;
+  height: 2px; background: var(--blue5); z-index: 0;
+}
+.pipe-step { text-align: center; position: relative; z-index: 1; padding: 0 8px; }
+.pipe-num {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--blue5);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
+  color: var(--slate3); transition: all .3s;
+}
+.pipe-step.done .pipe-num { background: var(--blue); border-color: var(--blue); color: white; box-shadow: var(--shb); }
+.pipe-title { font-size: 12.5px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.pipe-desc { font-size: 11px; color: var(--slate2); line-height: 1.4; }
+
+/* ── CTA ── */
+.cta { padding: 100px 0; background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%); position: relative; overflow: hidden; }
+.cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(37,99,235,.2) 0%, transparent 60%); }
+.cta-inner { max-width: 700px; margin: 0 auto; padding: 0 40px; text-align: center; position: relative; z-index: 1; }
+.cta-title { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; color: white; margin-bottom: 16px; }
+.cta-desc { font-size: 15px; color: rgba(255,255,255,.65); margin-bottom: 36px; line-height: 1.65; }
+
+/* ── FOOTER ── */
+footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,.08); padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; }
+.footer-text { font-size: 13px; color: rgba(255,255,255,.4); }
+.footer-links { display: flex; gap: 20px; }
+.footer-link { font-size: 13px; color: rgba(255,255,255,.4); text-decoration: none; transition: color .15s; }
+.footer-link:hover { color: rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+<div id="navbar"></div>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-inner">
+    <div class="fade-up">
+      <div class="hero-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        ML End-to-End · Kaggle Competition
+      </div>
+      <h1 class="hero-title">Prédire le Prix<br>d'une <span>Maison</span><br>avec l'IA</h1>
+      <p class="hero-desc">Pipeline complet de Machine Learning sur le dataset Ames Housing. De l'analyse exploratoire à la prédiction en temps réel — R² = 0.905.</p>
+      <div class="hero-btns">
+        <a href="predict.html" class="hero-btn-primary">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+          Estimer un Prix
+        </a>
+        <a href="eda.html" class="hero-btn-outline">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/></svg>
+          Voir l'EDA
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hstat-val">1,460</div><div class="hstat-lbl">Maisons analysées</div></div>
+        <div><div class="hstat-val">91</div><div class="hstat-lbl">Features utilisées</div></div>
+        <div><div class="hstat-val">0.905</div><div class="hstat-lbl">R² Score</div></div>
+        <div><div class="hstat-val">5</div><div class="hstat-lbl">Modèles comparés</div></div>
+      </div>
+    </div>
+
+    <div class="fade-up-2">
+      <div class="hero-card">
+        <div class="hero-card-title">Comparaison des Modèles</div>
+        <div id="model-list"></div>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px">MEILLEUR MODÈLE</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:8px;height:8px;border-radius:50%;background:#22C55E"></div>
+            <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:white">Gradient Boosting</span>
+            <span style="margin-left:auto;font-size:13px;font-weight:700;color:#22C55E">R² 0.905</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-text">HousePriceML · Ames Housing Dataset · Kaggle · 2026</div>
+  <div class="footer-links">
+    <a href="index.html" class="footer-link">Accueil</a>
+    <a href="eda.html" class="footer-link">EDA</a>
+    <a href="models.html" class="footer-link">Modèles</a>
+    <a href="predict.html" class="footer-link">Prédiction</a>
+    <a href="about.html" class="footer-link">À Propos</a>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+const MODELS_DATA = [
+  { name:'Gradient Boosting', r2:.905, color:'#22C55E', best:true },
+  { name:'Random Forest',     r2:.872, color:'#3B82F6', best:false },
+  { name:'Lasso Regression',  r2:.871, color:'#3B82F6', best:false },
+  { name:'Ridge Regression',  r2:.865, color:'#3B82F6', best:false },
+  { name:'Decision Tree',     r2:.762, color:'#94A3B8', best:false },
+];
+
+document.getElementById('model-list').innerHTML = MODELS_DATA.map(m => `
+  <div class="model-row ${m.best?'best':''}">
+    <div class="model-dot" style="background:${m.color}"></div>
+    <div class="model-name">${m.name}</div>
+    <div class="model-bar-wrap">
+      <div class="model-bar-fill" data-w="${m.r2*100}%" style="background:${m.color}"></div>
+    </div>
+    <div class="model-r2">${m.r2}</div>
+  </div>`).join('');
+</script>
+</body>
+</html>

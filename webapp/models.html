@@ -39,6 +39,10 @@
 .fi-track { flex: 1; height: 7px; background: var(--slate4); border-radius: 4px; overflow: hidden; }
 .fi-fill { height: 100%; border-radius: 4px; transition: width 1.4s ease; width: 0; }
 .fi-pct { font-size: 11.5px; font-weight: 700; color: var(--slate); min-width: 36px; text-align: right; }
+.draft-note { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px; }
+.draft-note-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.draft-note-text { font-size: 13px; color: #92400E; line-height: 1.6; }
+.draft-note-text strong { color: #78350F; }
 </style>
 </head>
 <body>
@@ -46,22 +50,30 @@
 
 <div class="container" style="padding-top:76px">
 
+  <!-- Note drafts -->
+  <div class="draft-note fade-up">
+    <div class="draft-note-icon">📋</div>
+    <div class="draft-note-text">
+      <strong>Sélection des modèles :</strong> 5 algorithmes ont été testés au total. Decision Tree (R²=0.762) et Ridge (R²=0.865) ont été écartés et documentés dans les <strong>notebooks de brouillon</strong>. Les 3 modèles ci-dessous constituent la sélection finale retenue.
+    </div>
+  </div>
+
   <!-- KPI row -->
   <div class="g4" style="margin-bottom:28px">
     <div class="kpi g fade-up"><div class="kpi-lbl">Meilleur R²</div><div class="kpi-val">0.905</div><div class="kpi-note"><span class="tag tag-g">Gradient Boosting</span></div></div>
     <div class="kpi b fade-up-2"><div class="kpi-lbl">CV RMSE</div><div class="kpi-val">0.118</div><div class="kpi-note"><span class="tag tag-b">log-scale</span></div></div>
     <div class="kpi a fade-up-3"><div class="kpi-lbl">Optimisation</div><div class="kpi-val">+0.8%</div><div class="kpi-note"><span class="tag tag-a">R² après tuning</span></div></div>
-    <div class="kpi s fade-up-4"><div class="kpi-lbl">Modèles testés</div><div class="kpi-val">5</div><div class="kpi-note">3 familles ML</div></div>
+    <div class="kpi s fade-up-4"><div class="kpi-lbl">Modèles retenus</div><div class="kpi-val">3</div><div class="kpi-note">sur 5 testés</div></div>
   </div>
 
   <!-- Model cards selector -->
   <div class="card fade-up" style="margin-bottom:22px">
     <div class="card-head" style="padding-bottom:16px">
-      <div class="card-title">Sélectionner un modèle pour les détails</div>
-      <div class="card-sub">Cliquez sur un modèle pour voir ses métriques</div>
+      <div class="card-title">Modèles Retenus — Sélectionner pour les détails</div>
+      <div class="card-sub">3 modèles sélectionnés parmi 5 testés · Cliquez pour voir les métriques</div>
     </div>
     <div class="card-body" style="padding-top:0">
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px" id="model-cards"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px" id="model-cards"></div>
     </div>
   </div>
 
@@ -79,7 +91,7 @@
 
   <!-- Full Table -->
   <div class="card fade-up" style="margin-bottom:22px">
-    <div class="card-head"><div class="card-title">Tableau Complet des Métriques</div><div class="card-sub">5-Fold CV · Validation 20% · Target = log1p(SalePrice)</div></div>
+    <div class="card-head"><div class="card-title">Tableau Complet des Métriques</div><div class="card-sub">5-Fold CV · Validation 20% · Target = log1p(SalePrice) · 3 modèles retenus</div></div>
     <div class="card-body" style="padding:0">
       <table class="mtable">
         <thead><tr><th>Modèle</th><th>Famille</th><th>CV RMSE</th><th>Val R²</th><th>Val RMSE</th><th>Val MAE</th><th></th></tr></thead>
@@ -111,7 +123,7 @@
 </div>
 
 <footer style="background:var(--navy);border-top:1px solid rgba(255,255,255,.08);padding:24px 40px;display:flex;align-items:center;justify-content:space-between">
-  <div style="font-size:13px;color:rgba(255,255,255,.4)">HousePriceML · Modèles ML</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.4)">HousePriceML · 3 Modèles retenus · Meilleur R² = 0.905</div>
   <a href="predict.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:var(--blue);color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">Tester la Prédiction →</a>
 </footer>
 
@@ -121,8 +133,6 @@ const MODELS = [
   {n:'Gradient Boosting',f:'Ensemble · Boosting',cv:.118,r2:.905,rmse:.118,mae:.082,best:true,icon:'🚀',color:'#16A34A'},
   {n:'Lasso',f:'Linéaire · L1',cv:.130,r2:.871,rmse:.126,mae:.090,best:false,icon:'📐',color:'#2563EB'},
   {n:'Random Forest',f:'Ensemble · Bagging',cv:.138,r2:.872,rmse:.134,mae:.094,best:false,icon:'🌲',color:'#2563EB'},
-  {n:'Ridge',f:'Linéaire · L2',cv:.135,r2:.865,rmse:.131,mae:.092,best:false,icon:'📏',color:'#2563EB'},
-  {n:'Decision Tree',f:'Arbre',cv:.201,r2:.762,rmse:.196,mae:.138,best:false,icon:'🌿',color:'#94A3B8'},
 ];
 const FI = [{n:'OverallQual',v:.142},{n:'TotalSF',v:.118},{n:'GrLivArea',v:.098},{n:'QualitySF',v:.082},{n:'YearBuilt',v:.071},{n:'GarageCars',v:.058},{n:'TotalBsmtSF',v:.052},{n:'KitchenQual',v:.047},{n:'ExterQual',v:.043},{n:'HouseAge',v:.038},{n:'1stFlrSF',v:.035},{n:'Neighborhood',v:.029}];
 const PARAMS = [['n_estimators','300'],['learning_rate','0.05'],['max_depth','4'],['subsample','0.8'],['min_samples_split','5'],['max_features','0.5']];
@@ -174,19 +184,28 @@ document.getElementById('fi-body').innerHTML = FI.map((f,i)=>`
   </div>`).join('');
 
 // Charts
-const names = MODELS.map(m=>m.n);
+const names  = MODELS.map(m=>m.n);
 const r2vals = MODELS.map(m=>m.r2);
 const cvvals = MODELS.map(m=>m.cv);
 const colors = MODELS.map(m=>m.best?'#16A34A':'#3B82F6');
 
 new Chart(document.getElementById('r2Chart').getContext('2d'),{
   type:'bar',data:{labels:names,datasets:[{label:'R² Score',data:r2vals,backgroundColor:colors,borderRadius:6,borderSkipped:false}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',formatter:v=>v.toFixed(3)}},scales:{x:{min:.7,max:1,grid:{color:'#F1F5F9'},ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11}}}}}
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:.8,max:1,grid:{color:'#F1F5F9'},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:12}}}}}
 });
 
 new Chart(document.getElementById('rmseChart').getContext('2d'),{
   type:'bar',data:{labels:names,datasets:[{label:'CV RMSE',data:cvvals,backgroundColor:MODELS.map(m=>m.best?'#EF4444':'#93C5FD'),borderRadius:6,borderSkipped:false}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11}}}}}
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:12}}}}}
+});
+
+// Animate bars on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.sbar-f, .fi-fill').forEach(el => {
+      el.style.width = el.dataset.w;
+    });
+  }, 300);
 });
 </script>
 </body>

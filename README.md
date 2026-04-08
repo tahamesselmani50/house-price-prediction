@@ -6,14 +6,14 @@
 ![Status](https://img.shields.io/badge/Status-Complete-22C55E)
 ![Score](https://img.shields.io/badge/R²-0.905-1D4ED8)
 
-> **Projet Machine Learning End-to-End** — Prédiction du prix de vente de maisons à Ames, Iowa  
-> Pipeline complet : EDA → Preprocessing → Feature Engineering → 5 Modèles → Optimisation
+> **Projet Machine Learning End-to-End** — Prédiction du prix de vente de maisons à Ames, Iowa
+> Pipeline complet : EDA → Preprocessing → Feature Engineering → 5 Modèles testés → **3 Retenus** → Optimisation
 
 ---
 
 ## 📋 Problématique
 
-**Étant données les 80 caractéristiques d'une maison** (surface, qualité, localisation, âge, équipements...),  
+**Étant données les 80 caractéristiques d'une maison** (surface, qualité, localisation, âge, équipements...),
 prédire son **prix de vente final** avec la meilleure précision possible.
 
 ---
@@ -37,22 +37,35 @@ prédire son **prix de vente final** avec la meilleure précision possible.
 house-price-prediction/
 │
 ├── data/
-│   ├── train.csv                    # Données d'entraînement (à télécharger)
-│   ├── test.csv                     # Données de test (à télécharger)
-│   ├── data_description.txt         # Description des 80 variables
+│   ├── train.csv                    # Données d'entraînement
+│   ├── test.csv                     # Données de test
 │   ├── submission.csv               # Prédictions finales (généré)
 │   └── README_data.md               # Instructions de téléchargement
 │
 ├── notebooks/
 │   ├── 01_EDA.ipynb                 # Analyse Exploratoire Complète
-│   └── 02_Modeling.ipynb            # Preprocessing + Modélisation + Évaluation
+│   ├── 02_Modeling.ipynb            # Notebook FINAL — 3 modèles retenus
+│   └── drafts/
+│       ├── 01_draft_decision_tree.ipynb   # ❌ Écarté — R²=0.762
+│       └── 02_draft_ridge_regression.ipynb # ⚠️ Écarté — au profit de Lasso
 │
 ├── src/
 │   ├── preprocessing.py             # Pipeline de preprocessing modulaire
 │   └── train.py                     # Script d'entraînement CLI
 │
-├── interface.html                   # Dashboard interactif (ouvrir dans navigateur)
-├── Presentation.pptx                # Slides de soutenance (8 slides)
+├── webapp/                          # Application web interactive
+│   ├── index.html                   # Page d'accueil
+│   ├── eda.html                     # Dashboard EDA
+│   ├── models.html                  # Comparaison 3 modèles
+│   ├── predict.html                 # Outil de prédiction
+│   ├── about.html                   # À propos
+│   ├── nav.js                       # Navigation
+│   └── style.css                    # Styles
+│
+├── Presentation.pptx                # Slides de soutenance (7 slides)
+├── model.pkl                        # Modèle entraîné (Gradient Boosting)
+├── scaler.pkl                       # Scaler StandardScaler
+├── app.py                           # App Streamlit (backup)
 ├── requirements.txt                 # Dépendances Python
 ├── .gitignore
 └── README.md
@@ -89,15 +102,22 @@ house-price-prediction/
 - **One-Hot Encoding** des variables nominales
 - **StandardScaler** (centrage-réduction)
 
-### 5️⃣ Modélisation — 5 Algorithmes
+### 5️⃣ Modélisation — 5 Algorithmes testés, 3 retenus
+
+#### ✅ Modèles retenus (notebook final)
 
 | Modèle | Famille | Justification | CV RMSE | R² |
 |--------|---------|---------------|---------|-----|
-| Ridge Regression | Linéaire L2 | Baseline, gère multicolinéarité | 0.135 | 0.865 |
-| Lasso Regression | Linéaire L1 | Sélection automatique de features | 0.130 | 0.871 |
-| Decision Tree | Arbre | Interprétable, non-linéaire | 0.201 | 0.762 |
-| Random Forest | Ensemble Bagging | Robuste, peu de variance | 0.138 | 0.872 |
 | **Gradient Boosting** ⭐ | **Ensemble Boosting** | **Haute performance** | **0.118** | **0.905** |
+| Lasso Regression | Linéaire L1 | Sélection automatique de features | 0.130 | 0.871 |
+| Random Forest | Ensemble Bagging | Robuste, peu de variance | 0.138 | 0.872 |
+
+#### ❌ Modèles écartés (notebooks de brouillon)
+
+| Modèle | CV RMSE | R² | Raison d'écart |
+|--------|---------|-----|----------------|
+| Ridge Regression | 0.135 | 0.865 | Lasso strictement meilleur (sélection features) |
+| Decision Tree | 0.201 | 0.762 | Overfitting sévère, performances insuffisantes |
 
 ### 6️⃣ Optimisation & Évaluation
 - **RandomizedSearchCV** : 40 itérations, 5-fold CV, 6 hyperparamètres
@@ -118,6 +138,25 @@ house-price-prediction/
 
 ---
 
+## 🌐 Application Web Interactive
+
+Le projet inclut une **application web complète** accessible sans serveur :
+
+```bash
+# Ouvrir dans le navigateur
+start webapp/index.html   # Windows
+open webapp/index.html    # Mac/Linux
+```
+
+Pages disponibles :
+- **`index.html`** — Dashboard KPI global
+- **`eda.html`** — Visualisations EDA interactives
+- **`models.html`** — Comparaison des 3 modèles retenus
+- **`predict.html`** — Outil de prédiction de prix
+- **`about.html`** — Méthodologie & contexte
+
+---
+
 ## ⚙️ Installation & Lancement
 
 ```bash
@@ -126,16 +165,14 @@ git clone https://github.com/[username]/house-price-prediction.git
 cd house-price-prediction
 
 # 2. Environnement virtuel
-python -m venv venv
-source venv/bin/activate        # Linux/Mac
-venv\Scripts\activate           # Windows
+python -m venv .venv
+.venv\Scripts\activate           # Windows
+source .venv/bin/activate        # Linux/Mac
 
 # 3. Installer les dépendances
 pip install -r requirements.txt
 
-# 4. Télécharger les données (voir data/README_data.md)
-
-# 5. Lancer les notebooks
+# 4. Lancer les notebooks
 jupyter notebook notebooks/
 
 # OU lancer le script d'entraînement directement
@@ -144,14 +181,11 @@ python src/train.py
 
 **Ordre d'exécution des notebooks :**
 1. `notebooks/01_EDA.ipynb` — Analyse exploratoire (exécuter toutes les cellules)
-2. `notebooks/02_Modeling.ipynb` — Modélisation complète
+2. `notebooks/02_Modeling.ipynb` — Modélisation finale (3 modèles)
 
-**Interface interactive :**
-```bash
-# Ouvrir directement dans le navigateur
-open interface.html    # Mac
-start interface.html   # Windows
-```
+**Notebooks de brouillon (expérimentations) :**
+- `notebooks/drafts/01_draft_decision_tree.ipynb` — Expérimentations Decision Tree ❌
+- `notebooks/drafts/02_draft_ridge_regression.ipynb` — Expérimentations Ridge ⚠️
 
 ---
 
@@ -172,12 +206,12 @@ start interface.html   # Windows
 
 ## 👤 Auteur
 
-**[Votre Nom]**  
-📧 [votre.email@example.com]  
-🔗 [LinkedIn](https://linkedin.com/in/votre-profil)  
+**[Votre Nom]**
+📧 [votre.email@example.com]
+🔗 [LinkedIn](https://linkedin.com/in/votre-profil)
 🐙 [GitHub](https://github.com/votre-username)
 
 ---
 
-*Projet réalisé dans le cadre du cours Machine Learning — [Votre Institution] — Avril 2026*  
+*Projet réalisé dans le cadre du cours Machine Learning — [Votre Institution] — Avril 2026*
 *Dataset source : Dean De Cock, "Ames, Iowa: Alternative to the Boston Housing Data", Journal of Statistics Education, 2011*
